@@ -14,13 +14,15 @@ type ErlType interface {
 type ErlExtBinary []byte
 
 const (
-	smallInteger uint8 = 97
-	integer            = 98
+	smallInteger    uint8 = 97
+	integer               = 98
+	smallBigInteger       = 110
 )
 
 var funcMap = map[uint8]func(ErlExtBinary) (ErlType, []byte, error){
-	smallInteger: decodeSmallInteger,
-	integer:      decodeInteger,
+	smallInteger:    decodeSmallInteger,
+	integer:         decodeInteger,
+	smallBigInteger: decodeSmallBigInteger,
 }
 
 func (b ErlExtBinary) Decode() (ErlType, error) {
