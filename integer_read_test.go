@@ -17,12 +17,14 @@ var table = []struct {
 	{"100", erl_ext.ErlExtBinary{131, 97, 100}, erl_ext.ErlInt(100)},
 	{"256", erl_ext.ErlExtBinary{131, 98, 0, 0, 1, 0}, erl_ext.ErlInt(256)},
 	{"65536", erl_ext.ErlExtBinary{131, 98, 0, 1, 0, 0}, erl_ext.ErlInt(65536)},
+	{"16777216", erl_ext.ErlExtBinary{131, 98, 1, 0, 0, 0}, erl_ext.ErlInt(16777216)},
 	{"-1", erl_ext.ErlExtBinary{131, 98, 255, 255, 255, 255}, erl_ext.ErlInt(-1)},
 	{"-2", erl_ext.ErlExtBinary{131, 98, 255, 255, 255, 254}, erl_ext.ErlInt(-2)},
 	{"-10", erl_ext.ErlExtBinary{131, 98, 255, 255, 255, 246}, erl_ext.ErlInt(-10)},
 	{"-100", erl_ext.ErlExtBinary{131, 98, 255, 255, 255, 156}, erl_ext.ErlInt(-100)},
 	{"-256", erl_ext.ErlExtBinary{131, 98, 255, 255, 255, 0}, erl_ext.ErlInt(-256)},
 	{"-65536", erl_ext.ErlExtBinary{131, 98, 255, 255, 0, 0}, erl_ext.ErlInt(-65536)},
+	{"-16777216", erl_ext.ErlExtBinary{131, 98, 255, 0, 0, 0}, erl_ext.ErlInt(-16777216)},
 }
 
 func TestReadingIntegers(t *testing.T) {
