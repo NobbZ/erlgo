@@ -105,12 +105,14 @@ func decodeSmallBigInteger(binary ErlExtBinary) (ErlType, []byte, error) {
 	}
 
 	res := big.NewInt(0)
+	mul := big.NewInt(1)
+	twoFiveSix := big.NewInt(256)
 
 	for i := 3; i < int(3+binary[1]); i++ {
-		mul := big.NewInt(powInt(256, int64(i-3)))
 		dig := big.NewInt(int64(binary[i]))
 		dig.Mul(dig, mul)
 		res.Add(res, dig)
+		mul.Mul(mul, twoFiveSix)
 	}
 
 	if binary[2] == 1 {
@@ -126,18 +128,4 @@ func decodeSmallBigInteger(binary ErlExtBinary) (ErlType, []byte, error) {
 	}
 
 	return ErlBigInt{res}, rem, nil
-}
-
-func powInt(a, b int64) int64 {
-	res := int64(1)
-
-	if b == 0 {
-		return 1
-	}
-
-	for i := b; i > 0; i-- {
-		res *= a
-	}
-
-	return res
 }
