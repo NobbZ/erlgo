@@ -112,7 +112,9 @@ func decodeSmallBigInteger(binary ErlExtBinary) (ErlType, []byte, error) {
 		dig := big.NewInt(int64(binary[i]))
 		dig.Mul(dig, mul)
 		res.Add(res, dig)
-		mul.Mul(mul, twoFiveSix)
+		if i < int(2+binary[1]) {
+			mul.Mul(mul, twoFiveSix)
+		}
 	}
 
 	if binary[2] == 1 {
