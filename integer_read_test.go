@@ -42,3 +42,13 @@ func TestReadingIntegers(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkReadingIntegers(b *testing.B) {
+	for _, data := range table {
+		b.Run(data.Name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				data.Data.Decode()
+			}
+		})
+	}
+}
