@@ -33,5 +33,23 @@ func decodeSmallInteger(binary ErlExtBinary) (ErlType, []byte, error) {
 }
 
 func decodeInteger(binary ErlExtBinary) (ErlType, []byte, error) {
-	return ErlInt(256), []byte{}, nil
+	if binary[0] != integer {
+		return nil, nil, fmt.Errorf("%v is not tagging a integer", binary[0])
+	}
+
+	if len(binary) < 5 {
+		return nil, nil, fmt.Errorf("%#v has not enough bytes for a integer", binary)
+	}
+
+	var rem []byte
+
+	if len(binary) == 5 {
+		rem = []byte{}
+	} else {
+		rem = binary[5:]
+	}
+
+	res := ErlInt(int32(binary[1])<<24 | int32(binary[2])<<16 | int32(binary[3])<<8 | int32(binary[4]))
+
+	return res, rem, nil
 }
