@@ -7,6 +7,8 @@ import (
 type ErlType interface {
 	ToInteger() (int64, error)
 	IsInteger() bool
+
+	Matches(ErlType) bool
 }
 
 type ErlExtBinary []byte

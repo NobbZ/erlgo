@@ -18,6 +18,7 @@ var table = []struct {
 	{"256", erl_ext.ErlExtBinary{131, 98, 0, 0, 1, 0}, erl_ext.ErlInt(256)},
 	{"65536", erl_ext.ErlExtBinary{131, 98, 0, 1, 0, 0}, erl_ext.ErlInt(65536)},
 	{"16777216", erl_ext.ErlExtBinary{131, 98, 1, 0, 0, 0}, erl_ext.ErlInt(16777216)},
+	{"4294967296", erl_ext.ErlExtBinary{131, 110, 5, 0, 0, 0, 0, 0, 1}, erl_ext.ErlInt(4294967296)},
 	{"-1", erl_ext.ErlExtBinary{131, 98, 255, 255, 255, 255}, erl_ext.ErlInt(-1)},
 	{"-2", erl_ext.ErlExtBinary{131, 98, 255, 255, 255, 254}, erl_ext.ErlInt(-2)},
 	{"-10", erl_ext.ErlExtBinary{131, 98, 255, 255, 255, 246}, erl_ext.ErlInt(-10)},
@@ -25,12 +26,13 @@ var table = []struct {
 	{"-256", erl_ext.ErlExtBinary{131, 98, 255, 255, 255, 0}, erl_ext.ErlInt(-256)},
 	{"-65536", erl_ext.ErlExtBinary{131, 98, 255, 255, 0, 0}, erl_ext.ErlInt(-65536)},
 	{"-16777216", erl_ext.ErlExtBinary{131, 98, 255, 0, 0, 0}, erl_ext.ErlInt(-16777216)},
+	{"-4294967296", erl_ext.ErlExtBinary{131, 110, 5, 1, 0, 0, 0, 0, 1}, erl_ext.ErlInt(-4294967296)},
 }
 
 func TestReadingIntegers(t *testing.T) {
 	for _, test := range table {
 		t.Run(test.Name, func(t *testing.T) {
-			if val, err := test.Data.Decode(); val != test.Expect {
+			if val, err := test.Data.Decode(); !val.Matches(test.Expect) {
 				if err == nil {
 					t.Errorf(`%#v parsed into %#v, expected %#v."`, test.Data, val, test.Expect)
 				} else {

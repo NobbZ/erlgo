@@ -12,6 +12,15 @@ func (ei ErlInt) IsInteger() bool {
 	return true
 }
 
+func (ei ErlInt) Matches(other ErlType) bool {
+	switch o := other.(type) {
+	case ErlInt:
+		return int64(ei) == int64(o)
+	default:
+		return false
+	}
+}
+
 func decodeSmallInteger(binary ErlExtBinary) (ErlType, []byte, error) {
 	if binary[0] != smallInteger {
 		return nil, nil, fmt.Errorf("%v is not tagging a small integer", binary[0])
