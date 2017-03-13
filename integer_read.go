@@ -25,7 +25,7 @@ func (ei Int64) Matches(other Term) bool {
 	switch o := other.(type) {
 	case Int64:
 		return int64(ei) == int64(o)
-	case ErlBigInt:
+	case IntBig:
 		return big.NewInt(int64(ei)).Cmp(o.Int) == 0
 	default:
 		return false
@@ -40,37 +40,37 @@ func (ei Int64) BigInt() *big.Int {
 	return big.NewInt(int64(ei))
 }
 
-type ErlBigInt struct {
+type IntBig struct {
 	*big.Int
 }
 
-func (ei ErlBigInt) ToInteger() (Int, error) {
+func (ei IntBig) ToInteger() (Int, error) {
 	return ei, nil
 }
 
-func (ei ErlBigInt) IsInteger() bool {
+func (ei IntBig) IsInteger() bool {
 	return true
 }
 
-func (ei ErlBigInt) Matches(other Term) bool {
+func (ei IntBig) Matches(other Term) bool {
 	switch o := other.(type) {
 	case Int64:
 		return o.Matches(ei)
-	case ErlBigInt:
+	case IntBig:
 		return ei.Int.Cmp(o.Int) == 0
 	default:
 		return false
 	}
 }
 
-func (ebi ErlBigInt) Int64() (int64, bool) {
+func (ebi IntBig) Int64() (int64, bool) {
 	if ebi.Cmp(int64MaxBig) == 1 || ebi.Cmp(int64MinBig) == -1 {
 		return 0, false
 	}
 	return ebi.Int.Int64(), true
 }
 
-func (ebi ErlBigInt) BigInt() *big.Int {
+func (ebi IntBig) BigInt() *big.Int {
 	return ebi.Int
 }
 
@@ -173,7 +173,7 @@ func decodeSmallBigInteger(binary ErlExtBinary) (Term, []byte, error) {
 	}
 
 	if bigRes != nil {
-		return ErlBigInt{bigRes}, rem, nil
+		return IntBig{bigRes}, rem, nil
 	} else {
 		return Int64(res), rem, nil
 	}
@@ -238,7 +238,7 @@ func decodeLargeBigInteger(binary ErlExtBinary) (Term, []byte, error) {
 	}
 
 	if bigRes != nil {
-		return ErlBigInt{bigRes}, rem, nil
+		return IntBig{bigRes}, rem, nil
 	} else {
 		return Int64(res), rem, nil
 	}
