@@ -95,7 +95,7 @@ func readInt32(b ErlExtBinary) (int32, error) {
 func decodeSmallInteger(b ErlExtBinary) (Term, error) {
 	if tag, err := b.scanner.ReadByte(); err != nil {
 		return nil, err
-	} else if tag != smallInteger {
+	} else if tag != smallIntegerExt {
 		return nil, fmt.Errorf("%v is not tagging a small integer", tag)
 	}
 
@@ -109,7 +109,7 @@ func decodeSmallInteger(b ErlExtBinary) (Term, error) {
 func decodeInteger(b ErlExtBinary) (Term, error) {
 	if tag, err := b.scanner.ReadByte(); err != nil {
 		return nil, err
-	} else if tag != integer {
+	} else if tag != integerExt {
 		return nil, fmt.Errorf("%v is not tagging a integer", tag)
 	}
 
@@ -121,7 +121,7 @@ func decodeInteger(b ErlExtBinary) (Term, error) {
 func decodeSmallBigInteger(b ErlExtBinary) (Term, error) {
 	if tag, err := b.scanner.ReadByte(); err != nil {
 		return nil, err
-	} else if tag != smallBigInteger {
+	} else if tag != smallBigIntegerExt {
 		return nil, fmt.Errorf("%v is not tagging a small big integer", tag)
 	}
 
@@ -191,7 +191,7 @@ func decodeSmallBigInteger(b ErlExtBinary) (Term, error) {
 func decodeLargeBigInteger(b ErlExtBinary) (Term, error) {
 	if tag, err := b.scanner.ReadByte(); err != nil {
 		return nil, err
-	} else if tag != largeBigInteger {
+	} else if tag != largeBigIntegerExt {
 		return nil, fmt.Errorf("%v is not tagging a large big integer", tag)
 	}
 

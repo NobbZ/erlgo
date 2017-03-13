@@ -18,17 +18,66 @@ type ErlExtBinary struct {
 }
 
 const (
-	smallInteger    uint8 = 97
-	integer               = 98
-	smallBigInteger       = 110
-	largeBigInteger       = 111
+	newFloatExt        uint8 = 70
+	bitBinaryExt             = 77
+	atomCacheRef             = 82
+	smallIntegerExt          = 97
+	integerExt               = 98
+	floatExt                 = 99
+	atomExt                  = 100
+	reference                = 101
+	portExt                  = 102
+	pidExt                   = 103
+	smallTupleExt            = 104
+	largeTupleExt            = 105
+	nilExt                   = 106
+	stringExt                = 107
+	listExt                  = 108
+	binaryExt                = 109
+	smallBigIntegerExt       = 110
+	largeBigIntegerExt       = 111
+	newFunExt                = 112
+	exportExt                = 113
+	newReferenceExt          = 114
+	smallAtomExt             = 115
+	mapExt                   = 116
+	funExt                   = 117
+	atomUtf8Ext              = 118
+	smallAtomUtf8Ext         = 119
 )
 
 var funcMap = map[uint8]func(ErlExtBinary) (Term, error){
-	smallInteger:    decodeSmallInteger,
-	integer:         decodeInteger,
-	smallBigInteger: decodeSmallBigInteger,
-	largeBigInteger: decodeLargeBigInteger,
+	newFloatExt:        undefined,
+	bitBinaryExt:       undefined,
+	atomCacheRef:       undefined,
+	smallIntegerExt:    decodeSmallInteger,
+	integerExt:         decodeInteger,
+	floatExt:           undefined,
+	atomExt:            undefined,
+	reference:          undefined,
+	portExt:            undefined,
+	pidExt:             undefined,
+	smallTupleExt:      undefined,
+	largeTupleExt:      undefined,
+	nilExt:             undefined,
+	stringExt:          undefined,
+	listExt:            undefined,
+	binaryExt:          undefined,
+	smallBigIntegerExt: decodeSmallBigInteger,
+	largeBigIntegerExt: decodeLargeBigInteger,
+	newFunExt:          undefined,
+	exportExt:          undefined,
+	newReferenceExt:    undefined,
+	smallAtomExt:       undefined,
+	mapExt:             undefined,
+	funExt:             undefined,
+	atomUtf8Ext:        undefined,
+	smallAtomUtf8Ext:   undefined,
+}
+
+func undefined(b ErlExtBinary) (Term, error) {
+	tag, _ := b.scanner.ReadByte()
+	return nil, fmt.Errorf("Undefined parser for tag %v", tag)
 }
 
 func NewReader(data []byte) ErlExtBinary {
