@@ -5,12 +5,18 @@ import (
 	"math/big"
 )
 
+const int64Max = 0x7fffffffffffffff
+const int64Min = 0x8000000000000000
+
+var int64MaxBig = big.NewInt(int64Max)
+var int64MinBig = big.NewInt(int64Min)
+
 var twoFiveSix = big.NewInt(256)
 
 type ErlInt int64
 
-func (ei ErlInt) ToInteger() (int64, error) {
-	return int64(ei), nil
+func (ei ErlInt) ToInteger() (ErlInteger, error) {
+	return ei, nil
 }
 
 func (ei ErlInt) IsInteger() bool {
@@ -28,12 +34,20 @@ func (ei ErlInt) Matches(other ErlType) bool {
 	}
 }
 
+func (ei ErlInt) Int64() (int64, bool) {
+	return int64(ei), true
+}
+
+func (ei ErlInt) BigInt() *big.Int {
+	return big.NewInt(int64(ei))
+}
+
 type ErlBigInt struct {
 	*big.Int
 }
 
-func (ei ErlBigInt) ToInteger() (int64, error) {
-	return 0, nil
+func (ei ErlBigInt) ToInteger() (ErlInteger, error) {
+	return ei, nil
 }
 
 func (ei ErlBigInt) IsInteger() bool {
@@ -49,6 +63,17 @@ func (ei ErlBigInt) Matches(other ErlType) bool {
 	default:
 		return false
 	}
+}
+
+func (ebi ErlBigInt) Int64() (int64, bool) {
+	if ebi.Cmp(int64MaxBig) == 1 || ebi.Cmp(int64MinBig) == -1 {
+		return 0, false
+	}
+	return ebi.Int.Int64(), true
+}
+
+func (ebi ErlBigInt) BigInt() *big.Int {
+
 }
 
 func decodeSmallInteger(binary ErlExtBinary) (ErlType, []byte, error) {
