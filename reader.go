@@ -47,7 +47,7 @@ const (
 )
 
 var funcMap = map[uint8]func(ErlExtBinary) (Term, error){
-	newFloatExt:        undefined,
+	newFloatExt:        undefined, // TODO: as soon as there is no `undefined` left, remove that function
 	bitBinaryExt:       undefined,
 	atomCacheRef:       undefined,
 	smallIntegerExt:    decodeSmallInteger,
@@ -75,6 +75,7 @@ var funcMap = map[uint8]func(ErlExtBinary) (Term, error){
 	smallAtomUtf8Ext:   undefined,
 }
 
+// TODO: remove this function when there is no undefined left in the map above
 func undefined(b ErlExtBinary) (Term, error) {
 	tag, _ := b.scanner.ReadByte()
 	return nil, fmt.Errorf("Undefined parser for tag %v", tag)
@@ -98,7 +99,7 @@ func decodeRemaining(b ErlExtBinary) (Term, error) {
 	if tag, err := b.scanner.ReadByte(); err != nil {
 		return nil, err
 	} else {
-		b.scanner.UnreadByte()
+		b.scanner.UnreadByte() // TODO: as soon as undefined has been removed, we can get rid of this unreading
 		if f, ok := funcMap[tag]; ok {
 			if res, err := f(b); err != nil {
 				return nil, err
