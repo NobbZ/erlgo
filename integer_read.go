@@ -74,6 +74,24 @@ func (ebi IntBig) BigInt() *big.Int {
 	return ebi.Int
 }
 
+func readInt32(b ErlExtBinary) (int32, error) {
+	result := int32(0)
+
+	if b1, err := b.scanner.ReadByte(); err != nil {
+		return 0, err
+	} else if b2, err := b.scanner.ReadByte(); err != nil {
+		return 0, err
+	} else if b3, err := b.scanner.ReadByte(); err != nil {
+		return 0, err
+	} else if b4, err := b.scanner.ReadByte(); err != nil {
+		return 0, err
+	} else {
+		result = int32(b1)<<24 | int32(b2)<<16 | int32(b3)<<8 | int32(b4)
+	}
+
+	return result, nil
+}
+
 func decodeSmallInteger(b ErlExtBinary) (Term, error) {
 	if tag, err := b.scanner.ReadByte(); err != nil {
 		return nil, err
@@ -95,20 +113,9 @@ func decodeInteger(b ErlExtBinary) (Term, error) {
 		return nil, fmt.Errorf("%v is not tagging a integer", tag)
 	}
 
-	res := Int64(0)
-	if b1, err := b.scanner.ReadByte(); err != nil {
-		return nil, err
-	} else if b2, err := b.scanner.ReadByte(); err != nil {
-		return nil, err
-	} else if b3, err := b.scanner.ReadByte(); err != nil {
-		return nil, err
-	} else if b4, err := b.scanner.ReadByte(); err != nil {
-		return nil, err
-	} else {
-		res = Int64(int32(b1)<<24 | int32(b2)<<16 | int32(b3)<<8 | int32(b4))
-	}
+	res, err := readInt32(b)
 
-	return res, nil
+	return Int64(res), err
 }
 
 func decodeSmallBigInteger(b ErlExtBinary) (Term, error) {
@@ -188,17 +195,9 @@ func decodeLargeBigInteger(b ErlExtBinary) (Term, error) {
 		return nil, fmt.Errorf("%v is not tagging a large big integer", tag)
 	}
 
-	byteCount := uint32(0)
-	if b1, err := b.scanner.ReadByte(); err != nil {
+	byteCount, err := readInt32(b)
+	if err != nil {
 		return nil, err
-	} else if b2, err := b.scanner.ReadByte(); err != nil {
-		return nil, err
-	} else if b3, err := b.scanner.ReadByte(); err != nil {
-		return nil, err
-	} else if b4, err := b.scanner.ReadByte(); err != nil {
-		return nil, err
-	} else {
-		byteCount = uint32(b1)<<24 | uint32(b2)<<16 | uint32(b3)<<8 | uint32(b4)
 	}
 
 	signum, err := b.scanner.ReadByte()
@@ -212,7 +211,7 @@ func decodeLargeBigInteger(b ErlExtBinary) (Term, error) {
 	res := int64(0)
 	mul := int64(1)
 
-	for i := uint32(0); i < byteCount; i++ {
+	for i := uint32(0); i < uint32(byteCount); i++ {
 		if i < 7 {
 			if dig, err := b.scanner.ReadByte(); err != nil {
 				return nil, err
