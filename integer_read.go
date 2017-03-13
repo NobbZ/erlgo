@@ -2,14 +2,12 @@ package erlgo
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 )
 
-const int64Max = 0x7fffffffffffffff
-const int64Min = 0x8000000000000000
-
-var int64MaxBig = big.NewInt(int64Max)
-var int64MinBig = big.NewInt(int64Min)
+var int64MaxBig = big.NewInt(math.MaxInt64)
+var int64MinBig = big.NewInt(math.MinInt64)
 
 var twoFiveSix = big.NewInt(256)
 
@@ -73,7 +71,7 @@ func (ebi ErlBigInt) Int64() (int64, bool) {
 }
 
 func (ebi ErlBigInt) BigInt() *big.Int {
-
+	return ebi.Int
 }
 
 func decodeSmallInteger(binary ErlExtBinary) (ErlType, []byte, error) {
