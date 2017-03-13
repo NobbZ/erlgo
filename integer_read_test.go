@@ -1,7 +1,7 @@
-package erl_ext_test
+package erlgo_test
 
 import (
-	"github.com/NobbZ/erl_ext"
+	"github.com/NobbZ/erlgo"
 	"math/big"
 	"testing"
 )

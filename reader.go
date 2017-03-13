@@ -1,4 +1,4 @@
-package erl_ext
+package erlgo
 
 import (
 	"fmt"
