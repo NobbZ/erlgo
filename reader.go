@@ -14,7 +14,7 @@ type Term interface {
 }
 
 type ErlExtBinary struct {
-	scanner io.ByteScanner
+	bs io.ByteScanner
 }
 
 const (
@@ -77,7 +77,7 @@ var funcMap = map[uint8]func(ErlExtBinary) (Term, error){
 
 // TODO: remove this function when there is no undefined left in the map above
 func undefined(b ErlExtBinary) (Term, error) {
-	tag, _ := b.scanner.ReadByte()
+	tag, _ := b.bs.ReadByte()
 	return nil, fmt.Errorf("Undefined parser for tag %v", tag)
 }
 
@@ -86,7 +86,7 @@ func NewReader(data []byte) ErlExtBinary {
 }
 
 func (b ErlExtBinary) Decode() (Term, error) {
-	if version, err := b.scanner.ReadByte(); err != nil {
+	if version, err := b.bs.ReadByte(); err != nil {
 		return nil, err
 	} else if version != 131 {
 		return nil, fmt.Errorf("%v is an unknown version specifier", version)
@@ -96,10 +96,10 @@ func (b ErlExtBinary) Decode() (Term, error) {
 }
 
 func decodeRemaining(b ErlExtBinary) (Term, error) {
-	if tag, err := b.scanner.ReadByte(); err != nil {
+	if tag, err := b.bs.ReadByte(); err != nil {
 		return nil, err
 	} else {
-		b.scanner.UnreadByte() // TODO: as soon as undefined has been removed, we can get rid of this unreading
+		b.bs.UnreadByte() // TODO: as soon as undefined has been removed, we can get rid of this unreading
 		if f, ok := funcMap[tag]; ok {
 			if res, err := f(b); err != nil {
 				return nil, err
