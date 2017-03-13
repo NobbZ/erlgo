@@ -11,19 +11,19 @@ var int64MinBig = big.NewInt(math.MinInt64)
 
 var twoFiveSix = big.NewInt(256)
 
-type ErlInt int64
+type Int64 int64
 
-func (ei ErlInt) ToInteger() (Int, error) {
+func (ei Int64) ToInteger() (Int, error) {
 	return ei, nil
 }
 
-func (ei ErlInt) IsInteger() bool {
+func (ei Int64) IsInteger() bool {
 	return true
 }
 
-func (ei ErlInt) Matches(other Term) bool {
+func (ei Int64) Matches(other Term) bool {
 	switch o := other.(type) {
-	case ErlInt:
+	case Int64:
 		return int64(ei) == int64(o)
 	case ErlBigInt:
 		return big.NewInt(int64(ei)).Cmp(o.Int) == 0
@@ -32,11 +32,11 @@ func (ei ErlInt) Matches(other Term) bool {
 	}
 }
 
-func (ei ErlInt) Int64() (int64, bool) {
+func (ei Int64) Int64() (int64, bool) {
 	return int64(ei), true
 }
 
-func (ei ErlInt) BigInt() *big.Int {
+func (ei Int64) BigInt() *big.Int {
 	return big.NewInt(int64(ei))
 }
 
@@ -54,7 +54,7 @@ func (ei ErlBigInt) IsInteger() bool {
 
 func (ei ErlBigInt) Matches(other Term) bool {
 	switch o := other.(type) {
-	case ErlInt:
+	case Int64:
 		return o.Matches(ei)
 	case ErlBigInt:
 		return ei.Int.Cmp(o.Int) == 0
@@ -91,7 +91,7 @@ func decodeSmallInteger(binary ErlExtBinary) (Term, []byte, error) {
 		rem = binary[2:]
 	}
 
-	return ErlInt(binary[1]), rem, nil
+	return Int64(binary[1]), rem, nil
 }
 
 func decodeInteger(binary ErlExtBinary) (Term, []byte, error) {
@@ -111,7 +111,7 @@ func decodeInteger(binary ErlExtBinary) (Term, []byte, error) {
 		rem = binary[5:]
 	}
 
-	res := ErlInt(int32(binary[1])<<24 | int32(binary[2])<<16 | int32(binary[3])<<8 | int32(binary[4]))
+	res := Int64(int32(binary[1])<<24 | int32(binary[2])<<16 | int32(binary[3])<<8 | int32(binary[4]))
 
 	return res, rem, nil
 }
@@ -175,7 +175,7 @@ func decodeSmallBigInteger(binary ErlExtBinary) (Term, []byte, error) {
 	if bigRes != nil {
 		return ErlBigInt{bigRes}, rem, nil
 	} else {
-		return ErlInt(res), rem, nil
+		return Int64(res), rem, nil
 	}
 }
 
@@ -240,6 +240,6 @@ func decodeLargeBigInteger(binary ErlExtBinary) (Term, []byte, error) {
 	if bigRes != nil {
 		return ErlBigInt{bigRes}, rem, nil
 	} else {
-		return ErlInt(res), rem, nil
+		return Int64(res), rem, nil
 	}
 }
