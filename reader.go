@@ -1,9 +1,9 @@
 package erlgo
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
-	"io"
 )
 
 type Term interface {
@@ -14,7 +14,7 @@ type Term interface {
 }
 
 type ErlExtBinary struct {
-	bs io.ByteScanner
+	bs *bufio.Reader
 }
 
 const (
@@ -81,8 +81,8 @@ func undefined(b ErlExtBinary) (Term, error) {
 	return nil, fmt.Errorf("Undefined parser for tag %v", tag)
 }
 
-func NewReader(data []byte) ErlExtBinary {
-	return ErlExtBinary{bytes.NewReader(data)}
+func FromBytes(data []byte) ErlExtBinary {
+	return ErlExtBinary{bufio.NewReader(bytes.NewReader(data))}
 }
 
 func (b ErlExtBinary) Decode() (Term, error) {
