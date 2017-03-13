@@ -21,7 +21,7 @@ func (ei ErlInt) IsInteger() bool {
 	return true
 }
 
-func (ei ErlInt) Matches(other ErlType) bool {
+func (ei ErlInt) Matches(other Term) bool {
 	switch o := other.(type) {
 	case ErlInt:
 		return int64(ei) == int64(o)
@@ -52,7 +52,7 @@ func (ei ErlBigInt) IsInteger() bool {
 	return true
 }
 
-func (ei ErlBigInt) Matches(other ErlType) bool {
+func (ei ErlBigInt) Matches(other Term) bool {
 	switch o := other.(type) {
 	case ErlInt:
 		return o.Matches(ei)
@@ -74,7 +74,7 @@ func (ebi ErlBigInt) BigInt() *big.Int {
 	return ebi.Int
 }
 
-func decodeSmallInteger(binary ErlExtBinary) (ErlType, []byte, error) {
+func decodeSmallInteger(binary ErlExtBinary) (Term, []byte, error) {
 	if binary[0] != smallInteger {
 		return nil, nil, fmt.Errorf("%v is not tagging a small integer", binary[0])
 	}
@@ -94,7 +94,7 @@ func decodeSmallInteger(binary ErlExtBinary) (ErlType, []byte, error) {
 	return ErlInt(binary[1]), rem, nil
 }
 
-func decodeInteger(binary ErlExtBinary) (ErlType, []byte, error) {
+func decodeInteger(binary ErlExtBinary) (Term, []byte, error) {
 	if binary[0] != integer {
 		return nil, nil, fmt.Errorf("%v is not tagging a integer", binary[0])
 	}
@@ -116,7 +116,7 @@ func decodeInteger(binary ErlExtBinary) (ErlType, []byte, error) {
 	return res, rem, nil
 }
 
-func decodeSmallBigInteger(binary ErlExtBinary) (ErlType, []byte, error) {
+func decodeSmallBigInteger(binary ErlExtBinary) (Term, []byte, error) {
 	if binary[0] != smallBigInteger {
 		return nil, nil, fmt.Errorf("%v is not tagging a small big integer", binary[0])
 	}
@@ -179,7 +179,7 @@ func decodeSmallBigInteger(binary ErlExtBinary) (ErlType, []byte, error) {
 	}
 }
 
-func decodeLargeBigInteger(binary ErlExtBinary) (ErlType, []byte, error) {
+func decodeLargeBigInteger(binary ErlExtBinary) (Term, []byte, error) {
 	if binary[0] != largeBigInteger {
 		return nil, nil, fmt.Errorf("%v is not tagging a small big integer", binary[0])
 	}

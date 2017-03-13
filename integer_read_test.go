@@ -23,7 +23,7 @@ var minusVeryBigMulTwoFiveSix = big.NewInt(0).Neg(plusVeryBigMulTwoFiveSix)
 var table = []struct {
 	Name   string
 	Data   erlgo.ErlExtBinary
-	Expect erlgo.ErlType
+	Expect erlgo.Term
 }{
 	{"0", erlgo.ErlExtBinary{131, 97, 0}, erlgo.ErlInt(0)},
 	{"1", erlgo.ErlExtBinary{131, 97, 1}, erlgo.ErlInt(1)},

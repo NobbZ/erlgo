@@ -4,11 +4,11 @@ import (
 	"fmt"
 )
 
-type ErlType interface {
+type Term interface {
 	ToInteger() (Int, error)
 	IsInteger() bool
 
-	Matches(ErlType) bool
+	Matches(Term) bool
 }
 
 type ErlExtBinary []byte
@@ -20,14 +20,14 @@ const (
 	largeBigInteger       = 111
 )
 
-var funcMap = map[uint8]func(ErlExtBinary) (ErlType, []byte, error){
+var funcMap = map[uint8]func(ErlExtBinary) (Term, []byte, error){
 	smallInteger:    decodeSmallInteger,
 	integer:         decodeInteger,
 	smallBigInteger: decodeSmallBigInteger,
 	largeBigInteger: decodeLargeBigInteger,
 }
 
-func (b ErlExtBinary) Decode() (ErlType, error) {
+func (b ErlExtBinary) Decode() (Term, error) {
 	if len(b) < 2 {
 		return nil, fmt.Errorf("%v is to short", b)
 	}
@@ -39,7 +39,7 @@ func (b ErlExtBinary) Decode() (ErlType, error) {
 	return decodeRemaining(b[1:])
 }
 
-func decodeRemaining(b ErlExtBinary) (ErlType, error) {
+func decodeRemaining(b ErlExtBinary) (Term, error) {
 	if f, ok := funcMap[b[0]]; ok {
 		res, rem, err := f(b)
 
