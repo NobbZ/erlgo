@@ -74,59 +74,136 @@ func (ebi IntBig) BigInt() *big.Int {
 	return ebi.Int
 }
 
-func decodeSmallInteger(binary ErlExtBinary) (Term, []byte, error) {
-	if binary[0] != smallInteger {
-		return nil, nil, fmt.Errorf("%v is not tagging a small integer", binary[0])
+func decodeSmallInteger(b ErlExtBinary) (Term, error) {
+	if tag, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
+	} else if tag != smallInteger {
+		return nil, fmt.Errorf("%v is not tagging a small integer", tag)
 	}
 
-	if len(binary) < 2 {
-		return nil, nil, fmt.Errorf("%#v has not enough bytes for a small integer", binary)
-	}
-
-	var rem []byte
-
-	if len(binary) == 2 {
-		rem = []byte{}
+	if byte, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
 	} else {
-		rem = binary[2:]
+		return Int64(byte), nil
 	}
-
-	return Int64(binary[1]), rem, nil
 }
 
-func decodeInteger(binary ErlExtBinary) (Term, []byte, error) {
-	if binary[0] != integer {
-		return nil, nil, fmt.Errorf("%v is not tagging a integer", binary[0])
+func decodeInteger(b ErlExtBinary) (Term, error) {
+	if tag, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
+	} else if tag != integer {
+		return nil, fmt.Errorf("%v is not tagging a integer", tag)
 	}
 
-	if len(binary) < 5 {
-		return nil, nil, fmt.Errorf("%#v has not enough bytes for a integer", binary)
-	}
-
-	var rem []byte
-
-	if len(binary) == 5 {
-		rem = []byte{}
+	res := Int64(0)
+	if b1, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
+	} else if b2, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
+	} else if b3, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
+	} else if b4, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
 	} else {
-		rem = binary[5:]
+		res = Int64(int32(b1)<<24 | int32(b2)<<16 | int32(b3)<<8 | int32(b4))
 	}
 
-	res := Int64(int32(binary[1])<<24 | int32(binary[2])<<16 | int32(binary[3])<<8 | int32(binary[4]))
-
-	return res, rem, nil
+	return res, nil
 }
 
-func decodeSmallBigInteger(binary ErlExtBinary) (Term, []byte, error) {
-	if binary[0] != smallBigInteger {
-		return nil, nil, fmt.Errorf("%v is not tagging a small big integer", binary[0])
+func decodeSmallBigInteger(b ErlExtBinary) (Term, error) {
+	if tag, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
+	} else if tag != smallBigInteger {
+		return nil, fmt.Errorf("%v is not tagging a small big integer", tag)
 	}
 
-	if len(binary) < 4 {
-		return nil, nil, fmt.Errorf("%#v has not enough bytes for a small big integer", binary)
+	if byteCount, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
+	} else {
+		res := int64(0)
+		mul := int64(1)
+
+		signum, err := b.scanner.ReadByte()
+		if err != nil {
+			return nil, err
+		}
+
+		var bigRes *big.Int // := big.NewInt(0)
+		var bigMul *big.Int // := big.NewInt(1)
+
+		for i := 0; i < int(byteCount); i++ {
+			if i < 7 {
+				if dig, err := b.scanner.ReadByte(); err != nil {
+					return nil, err
+				} else {
+					dig := int64(dig)
+					dig *= mul
+					res += dig
+					mul *= 256
+				}
+			} else if i == 7 {
+				if dig, err := b.scanner.ReadByte(); err != nil {
+					return nil, err
+				} else {
+					bigRes = big.NewInt(res)
+					bigMul = big.NewInt(mul)
+					dig := big.NewInt(int64(dig))
+					dig.Mul(dig, bigMul)
+					bigRes.Add(bigRes, dig)
+					bigMul.Mul(bigMul, twoFiveSix)
+				}
+			} else {
+				if dig, err := b.scanner.ReadByte(); err != nil {
+					return nil, err
+				} else {
+					dig := big.NewInt(int64(dig))
+					dig.Mul(dig, bigMul)
+					bigRes.Add(bigRes, dig)
+					bigMul.Mul(bigMul, twoFiveSix)
+				}
+			}
+		}
+
+		if signum == 1 {
+			if bigRes != nil {
+				bigRes.Neg(bigRes)
+			} else {
+				res *= -1
+			}
+		}
+
+		if bigRes != nil {
+			return IntBig{bigRes}, nil
+		} else {
+			return Int64(res), nil
+		}
+	}
+}
+
+func decodeLargeBigInteger(b ErlExtBinary) (Term, error) {
+	if tag, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
+	} else if tag != largeBigInteger {
+		return nil, fmt.Errorf("%v is not tagging a large big integer", tag)
 	}
 
-	if len(binary)-3 < int(binary[1]) {
-		return nil, nil, fmt.Errorf("%#v has less bytes then its size specifies", binary)
+	byteCount := uint32(0)
+	if b1, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
+	} else if b2, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
+	} else if b3, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
+	} else if b4, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
+	} else {
+		byteCount = uint32(b1)<<24 | uint32(b2)<<16 | uint32(b3)<<8 | uint32(b4)
+	}
+
+	signum, err := b.scanner.ReadByte()
+	if err != nil {
+		return nil, err
 	}
 
 	var bigRes *big.Int // := big.NewInt(0)
@@ -135,28 +212,40 @@ func decodeSmallBigInteger(binary ErlExtBinary) (Term, []byte, error) {
 	res := int64(0)
 	mul := int64(1)
 
-	for i := 0; i < int(binary[1]); i++ {
+	for i := uint32(0); i < byteCount; i++ {
 		if i < 7 {
-			dig := int64(binary[3+i])
-			dig *= mul
-			res += dig
-			mul *= 256
+			if dig, err := b.scanner.ReadByte(); err != nil {
+				return nil, err
+			} else {
+				dig := int64(dig)
+				dig *= mul
+				res += dig
+				mul *= 256
+			}
 		} else if i == 7 {
-			bigRes = big.NewInt(res)
-			bigMul = big.NewInt(mul)
-			bigDig := big.NewInt(int64(binary[3+i]))
-			bigDig.Mul(bigDig, bigMul)
-			bigRes.Add(bigRes, bigDig)
-			bigMul.Mul(bigMul, twoFiveSix)
+			if dig, err := b.scanner.ReadByte(); err != nil {
+				return nil, err
+			} else {
+				bigRes = big.NewInt(res)
+				bigMul = big.NewInt(mul)
+				dig := big.NewInt(int64(dig))
+				dig.Mul(dig, bigMul)
+				bigRes.Add(bigRes, dig)
+				bigMul.Mul(bigMul, twoFiveSix)
+			}
 		} else {
-			bigDig := big.NewInt(int64(binary[3+i]))
-			bigDig.Mul(bigDig, bigMul)
-			bigRes.Add(bigRes, bigDig)
-			bigMul.Mul(bigMul, twoFiveSix)
+			if dig, err := b.scanner.ReadByte(); err != nil {
+				return nil, err
+			} else {
+				dig := big.NewInt(int64(dig))
+				dig.Mul(dig, bigMul)
+				bigRes.Add(bigRes, dig)
+				bigMul.Mul(bigMul, twoFiveSix)
+			}
 		}
 	}
 
-	if binary[2] == 1 {
+	if signum == 1 {
 		if bigRes != nil {
 			bigRes.Neg(bigRes)
 		} else {
@@ -164,82 +253,9 @@ func decodeSmallBigInteger(binary ErlExtBinary) (Term, []byte, error) {
 		}
 	}
 
-	var rem []byte
-
-	if len(binary) == 3+int(binary[1]) {
-		rem = []byte{}
-	} else {
-		rem = binary[5:]
-	}
-
 	if bigRes != nil {
-		return IntBig{bigRes}, rem, nil
+		return IntBig{bigRes}, nil
 	} else {
-		return Int64(res), rem, nil
-	}
-}
-
-func decodeLargeBigInteger(binary ErlExtBinary) (Term, []byte, error) {
-	if binary[0] != largeBigInteger {
-		return nil, nil, fmt.Errorf("%v is not tagging a small big integer", binary[0])
-	}
-
-	if len(binary) < 7 {
-		return nil, nil, fmt.Errorf("%#v has not enough bytes for a small big integer", binary)
-	}
-
-	if len(binary)-6 < int(binary[1]) {
-		return nil, nil, fmt.Errorf("%#v has less bytes then its size specifies", binary)
-	}
-
-	numBytes := uint32(binary[1])<<24 | uint32(binary[2])<<16 | uint32(binary[3])<<8 | uint32(binary[4])
-
-	var bigRes *big.Int // := big.NewInt(0)
-	var bigMul *big.Int // := big.NewInt(1)
-
-	res := int64(0)
-	mul := int64(1)
-
-	for i := uint32(0); i < numBytes; i++ {
-		if i < 7 {
-			dig := int64(binary[6+i])
-			dig *= mul
-			res += dig
-			mul *= 256
-		} else if i == 7 {
-			bigRes = big.NewInt(res)
-			bigMul = big.NewInt(mul)
-			bigDig := big.NewInt(int64(binary[6+i]))
-			bigDig.Mul(bigDig, bigMul)
-			bigRes.Add(bigRes, bigDig)
-			bigMul.Mul(bigMul, twoFiveSix)
-		} else {
-			bigDig := big.NewInt(int64(binary[6+i]))
-			bigDig.Mul(bigDig, bigMul)
-			bigRes.Add(bigRes, bigDig)
-			bigMul.Mul(bigMul, twoFiveSix)
-		}
-	}
-
-	if binary[5] == 1 {
-		if bigRes != nil {
-			bigRes.Neg(bigRes)
-		} else {
-			res *= -1
-		}
-	}
-
-	var rem []byte
-
-	if int64(len(binary)) == 6+int64(numBytes) {
-		rem = []byte{}
-	} else {
-		rem = binary[5:]
-	}
-
-	if bigRes != nil {
-		return IntBig{bigRes}, rem, nil
-	} else {
-		return Int64(res), rem, nil
+		return Int64(res), nil
 	}
 }

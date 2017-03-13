@@ -1,7 +1,9 @@
 package erlgo
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 )
 
 type Term interface {
@@ -11,7 +13,9 @@ type Term interface {
 	Matches(Term) bool
 }
 
-type ErlExtBinary []byte
+type ErlExtBinary struct {
+	scanner io.ByteScanner
+}
 
 const (
 	smallInteger    uint8 = 97
@@ -20,38 +24,39 @@ const (
 	largeBigInteger       = 111
 )
 
-var funcMap = map[uint8]func(ErlExtBinary) (Term, []byte, error){
+var funcMap = map[uint8]func(ErlExtBinary) (Term, error){
 	smallInteger:    decodeSmallInteger,
 	integer:         decodeInteger,
 	smallBigInteger: decodeSmallBigInteger,
 	largeBigInteger: decodeLargeBigInteger,
 }
 
+func NewReader(data []byte) ErlExtBinary {
+	return ErlExtBinary{bytes.NewReader(data)}
+}
+
 func (b ErlExtBinary) Decode() (Term, error) {
-	if len(b) < 2 {
-		return nil, fmt.Errorf("%v is to short", b)
+	if version, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
+	} else if version != 131 {
+		return nil, fmt.Errorf("%v is an unknown version specifier", version)
 	}
 
-	if b[0] != 131 {
-		return nil, fmt.Errorf("%v is an unknown version specifier", b[0])
-	}
-
-	return decodeRemaining(b[1:])
+	return decodeRemaining(b)
 }
 
 func decodeRemaining(b ErlExtBinary) (Term, error) {
-	if f, ok := funcMap[b[0]]; ok {
-		res, rem, err := f(b)
-
-		if err != nil {
-			return nil, err
+	if tag, err := b.scanner.ReadByte(); err != nil {
+		return nil, err
+	} else {
+		b.scanner.UnreadByte()
+		if f, ok := funcMap[tag]; ok {
+			if res, err := f(b); err != nil {
+				return nil, err
+			} else {
+				return res, nil
+			}
 		}
-
-		if len(rem) != 0 {
-			return nil, fmt.Errorf("There were bytes left to consume after resolving nesting")
-		}
-
-		return res, nil
+		return nil, fmt.Errorf("%v is an unknown tag", tag)
 	}
-	return nil, fmt.Errorf("%v is an unknown tag", b[0])
 }
