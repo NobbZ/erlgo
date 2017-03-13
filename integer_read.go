@@ -13,7 +13,7 @@ var twoFiveSix = big.NewInt(256)
 
 type ErlInt int64
 
-func (ei ErlInt) ToInteger() (ErlInteger, error) {
+func (ei ErlInt) ToInteger() (Int, error) {
 	return ei, nil
 }
 
@@ -44,7 +44,7 @@ type ErlBigInt struct {
 	*big.Int
 }
 
-func (ei ErlBigInt) ToInteger() (ErlInteger, error) {
+func (ei ErlBigInt) ToInteger() (Int, error) {
 	return ei, nil
 }
 

@@ -5,7 +5,7 @@ import (
 )
 
 type ErlType interface {
-	ToInteger() (ErlInteger, error)
+	ToInteger() (Int, error)
 	IsInteger() bool
 
 	Matches(ErlType) bool

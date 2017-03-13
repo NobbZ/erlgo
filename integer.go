@@ -2,7 +2,7 @@ package erlgo
 
 import "math/big"
 
-type ErlInteger interface {
+type Int interface {
 	Int64() (int64, bool)
 	BigInt() *big.Int
 
