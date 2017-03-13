@@ -155,3 +155,68 @@ func decodeSmallBigInteger(binary ErlExtBinary) (ErlType, []byte, error) {
 		return ErlInt(res), rem, nil
 	}
 }
+
+func decodeLargeBigInteger(binary ErlExtBinary) (ErlType, []byte, error) {
+	if binary[0] != largeBigInteger {
+		return nil, nil, fmt.Errorf("%v is not tagging a small big integer", binary[0])
+	}
+
+	if len(binary) < 7 {
+		return nil, nil, fmt.Errorf("%#v has not enough bytes for a small big integer", binary)
+	}
+
+	if len(binary)-6 < int(binary[1]) {
+		return nil, nil, fmt.Errorf("%#v has less bytes then its size specifies", binary)
+	}
+
+	numBytes := uint32(binary[1])<<24 | uint32(binary[2])<<16 | uint32(binary[3])<<8 | uint32(binary[4])
+
+	var bigRes *big.Int // := big.NewInt(0)
+	var bigMul *big.Int // := big.NewInt(1)
+
+	res := int64(0)
+	mul := int64(1)
+
+	for i := uint32(0); i < numBytes; i++ {
+		if i < 7 {
+			dig := int64(binary[6+i])
+			dig *= mul
+			res += dig
+			mul *= 256
+		} else if i == 7 {
+			bigRes = big.NewInt(res)
+			bigMul = big.NewInt(mul)
+			bigDig := big.NewInt(int64(binary[6+i]))
+			bigDig.Mul(bigDig, bigMul)
+			bigRes.Add(bigRes, bigDig)
+			bigMul.Mul(bigMul, twoFiveSix)
+		} else {
+			bigDig := big.NewInt(int64(binary[6+i]))
+			bigDig.Mul(bigDig, bigMul)
+			bigRes.Add(bigRes, bigDig)
+			bigMul.Mul(bigMul, twoFiveSix)
+		}
+	}
+
+	if binary[5] == 1 {
+		if bigRes != nil {
+			bigRes.Neg(bigRes)
+		} else {
+			res *= -1
+		}
+	}
+
+	var rem []byte
+
+	if int64(len(binary)) == 6+int64(numBytes) {
+		rem = []byte{}
+	} else {
+		rem = binary[5:]
+	}
+
+	if bigRes != nil {
+		return ErlBigInt{bigRes}, rem, nil
+	} else {
+		return ErlInt(res), rem, nil
+	}
+}

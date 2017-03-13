@@ -17,12 +17,14 @@ const (
 	smallInteger    uint8 = 97
 	integer               = 98
 	smallBigInteger       = 110
+	largeBigInteger       = 111
 )
 
 var funcMap = map[uint8]func(ErlExtBinary) (ErlType, []byte, error){
 	smallInteger:    decodeSmallInteger,
 	integer:         decodeInteger,
 	smallBigInteger: decodeSmallBigInteger,
+	largeBigInteger: decodeLargeBigInteger,
 }
 
 func (b ErlExtBinary) Decode() (ErlType, error) {
