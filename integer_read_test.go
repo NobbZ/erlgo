@@ -20,7 +20,7 @@ var minusTen = big.NewInt(0).Neg(plusTen)
 var minusVeryBig = big.NewInt(0).Neg(plusVeryBig)
 var minusVeryBigMulTwoFiveSix = big.NewInt(0).Neg(plusVeryBigMulTwoFiveSix)
 
-var table = []struct {
+var integerTestTable = []struct {
 	Name   string
 	Data   erlgo.ErlExtBinary
 	Expect erlgo.Term
@@ -61,7 +61,7 @@ var table = []struct {
 }
 
 func TestReadingIntegers(t *testing.T) {
-	for _, test := range table {
+	for _, test := range integerTestTable {
 		t.Run(test.Name, func(t *testing.T) {
 			if val, err := test.Data.Decode(); err == nil && !val.Matches(test.Expect) {
 				t.Errorf(`%#v parsed into %#v, expected %#v."`, test.Data, val, test.Expect)
@@ -73,7 +73,7 @@ func TestReadingIntegers(t *testing.T) {
 }
 
 func BenchmarkReadingIntegers(b *testing.B) {
-	for _, data := range table {
+	for _, data := range integerTestTable {
 		b.Run(data.Name, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				data.Data.Decode()
