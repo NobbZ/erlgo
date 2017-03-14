@@ -62,7 +62,7 @@ var funcMap = map[uint8]func(ErlExtBinary) (Term, error){
 	smallTupleExt:      undefined,
 	largeTupleExt:      undefined,
 	nilExt:             undefined,
-	stringExt:          undefined,
+	stringExt:          decodeStringExt,
 	listExt:            undefined,
 	binaryExt:          undefined,
 	smallBigIntegerExt: decodeSmallBigInteger,
