@@ -5,11 +5,26 @@ import (
 	"errors"
 )
 
+type List interface {
+	ToSlice() ([]Term, err)
+	Len() int
+}
+
 type Nil struct{}
+
+func (n Nil) ToSlice() ([]Term, err) {
+	return []Term{}
+}
+
+func (n Nil) Len() int {
+	return 0
+}
 
 func (n Nil) IsInteger() bool {
 	return false
 }
+
+func (n Nil) IsList() bool { return true }
 
 func (n Nil) ToInteger() (Int, error) {
 	return nil, errors.New("Not an Integer")
@@ -24,42 +39,53 @@ func (n Nil) Matches(other Term) bool {
 	}
 }
 
-type List struct {
-	firsts []Term
-	tail   Term
+type Cons struct {
+	this Term
+	next Term
 }
 
-func (l List) IsInteger() bool {
+func (c Cons) ToSlice() ([]Term, err) {
+	return []Term{}
+}
+
+func (c Cons) Len() int {
+	return 0
+}
+
+func (c Cons) IsInteger() bool {
 	return false
 }
 
-func (l List) ToInteger() (Int, error) {
+func (c Cons) IsList() bool { return true }
+
+func (c Cons) ToInteger() (Int, error) {
 	return nil, errors.New("Not an Integer")
 }
 
-func (l List) Matches(other Term) bool {
+func (c Cons) Matches(other Term) bool {
 	switch o := other.(type) {
-	case List:
-		if len(l.firsts) != len(o.firsts) {
-			return false
-		}
+	case Cons:
+		x, y := c, o
 
-		for idx := range l.firsts {
-			if l.firsts[idx].Matches(o.firsts[idx]) {
-				return false
-			}
+		for x.IsList() && y.IsList() {
+
 		}
-		return l.tail.Matches(o.tail)
 	default:
 		return false
 	}
 }
 
 func NewListFromTerms(terms []Term) List {
-	return List{
-		firsts: terms,
-		tail:   Nil{},
+	var result Cons = Nil{}
+
+	for i := len(terms) - 1; i >= 0; i-- {
+		result = Cons{
+			this: terms[i],
+			next: result,
+		}
 	}
+
+	return result
 }
 
 func decodeStringExt(b ErlExtBinary) (Term, error) {
@@ -83,5 +109,5 @@ func decodeStringExt(b ErlExtBinary) (Term, error) {
 		}
 	}
 
-	return List{result, Nil{}}, nil
+	return Cons{result, Nil{}}, nil
 }

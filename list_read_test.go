@@ -12,8 +12,8 @@ var listTestTable = []struct {
 }{
 	{"empty list", erlgo.FromBytes([]byte{131, 106}), erlgo.NewListFromTerms([]erlgo.Term{})},
 	{"short byte list", erlgo.FromBytes([]byte{131, 107, 0, 1, 130}), erlgo.NewListFromTerms([]erlgo.Term{erlgo.Int64(130)})},
-	{"medium byte list", erlgo.FromBytes([]byte{131, 107, 125, 0, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130}), erlgo.List{}},
-	{"long byte list", erlgo.FromBytes([]byte{131, 107, 255, 254, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130}), erlgo.List{}},
+	{"medium byte list", erlgo.FromBytes([]byte{131, 107, 125, 0, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130}), erlgo.ProperList{}},
+	{"long byte list", erlgo.FromBytes([]byte{131, 107, 255, 254, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130, 130}), erlgo.ProperList{}},
 }
 
 func TestReadingLists(t *testing.T) {

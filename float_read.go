@@ -13,6 +13,10 @@ func (f Float) IsInteger() bool {
 	return false
 }
 
+func (f Float) IsList() bool {
+	return false
+}
+
 func (f Float) ToInteger() (Int, error) {
 	return nil, errors.New("Not an Integer")
 }

@@ -11,6 +11,8 @@ type Term interface {
 	ToInteger() (Int, error)
 	IsInteger() bool
 
+	IsList() bool
+
 	Matches(Term) bool
 }
 

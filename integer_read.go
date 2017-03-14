@@ -21,6 +21,8 @@ func (ei Int64) IsInteger() bool {
 	return true
 }
 
+func (i Int64) IsList() bool { return false }
+
 func (ei Int64) Matches(other Term) bool {
 	switch o := other.(type) {
 	case Int64:
@@ -51,6 +53,8 @@ func (ei IntBig) ToInteger() (Int, error) {
 func (ei IntBig) IsInteger() bool {
 	return true
 }
+
+func (i IntBig) IsList() bool { return false }
 
 func (ei IntBig) Matches(other Term) bool {
 	switch o := other.(type) {
