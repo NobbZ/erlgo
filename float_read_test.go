@@ -11,6 +11,8 @@ var floatTestTable = []struct {
 	Expect erlgo.Term
 }{
 	{"0.0 (new format)", erlgo.FromBytes([]byte{131, 70, 0, 0, 0, 0, 0, 0, 0, 0}), erlgo.Float(0.0)},
+	{"1.0 (new format)", erlgo.FromBytes([]byte{131, 70, 63, 240, 0, 0, 0, 0, 0, 0}), erlgo.Float(1.0)},
+	{"1.7976931348623157e+308 (new format)", erlgo.FromBytes([]byte{131, 70, 127, 239, 255, 255, 255, 255, 255, 255}), erlgo.Float(1.7976931348623157e+308)},
 	{"0.0 (old format)", erlgo.FromBytes([]byte{131, 99, 48, 46, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 101, 43, 48, 48, 0, 0, 0, 0, 0}), erlgo.Float(0.0)},
 	{"0.0 (old format, compressed)", erlgo.FromBytes([]byte{131, 80, 0, 0, 0, 32, 120, 156, 75, 54, 208, 51, 192, 2, 82, 181, 13, 12, 24, 64, 0, 0, 104, 41, 5, 114}), erlgo.Float(0.0)},
 }

@@ -49,8 +49,8 @@ const (
 )
 
 var funcMap = map[uint8]func(ErlExtBinary) (Term, error){
-	newFloatExt:        undefined, // TODO: as soon as there is no `undefined` left, remove that function
-	bitBinaryExt:       undefined,
+	newFloatExt:        decodeNewFloat,
+	bitBinaryExt:       undefined, // TODO: as soon as there is no `undefined` left, remove that function
 	atomCacheRef:       undefined,
 	smallIntegerExt:    decodeSmallInteger,
 	integerExt:         decodeInteger,
