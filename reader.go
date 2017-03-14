@@ -3,6 +3,7 @@ package erlgo
 import (
 	"bufio"
 	"bytes"
+	"compress/zlib"
 	"fmt"
 )
 
@@ -20,6 +21,7 @@ type ErlExtBinary struct {
 const (
 	newFloatExt        uint8 = 70
 	bitBinaryExt             = 77
+	compressed               = 80
 	atomCacheRef             = 82
 	smallIntegerExt          = 97
 	integerExt               = 98
@@ -99,6 +101,19 @@ func decodeRemaining(b ErlExtBinary) (Term, error) {
 	if tag, err := b.bs.ReadByte(); err != nil {
 		return nil, err
 	} else {
+		if tag == compressed {
+			b.bs.ReadByte() // TODO: Instead of just skipping the uncompressed size, use it to verify data!
+			b.bs.ReadByte()
+			b.bs.ReadByte()
+			b.bs.ReadByte()
+			rc, err := zlib.NewReader(b.bs)
+
+			b.bs = bufio.NewReader(rc)
+			if tag, err = b.bs.ReadByte(); err != nil {
+				return nil, err
+			}
+		}
+
 		b.bs.UnreadByte() // TODO: as soon as undefined has been removed, we can get rid of this unreading
 		if f, ok := funcMap[tag]; ok {
 			if res, err := f(b); err != nil {
