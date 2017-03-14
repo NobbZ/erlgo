@@ -54,7 +54,7 @@ var funcMap = map[uint8]func(ErlExtBinary) (Term, error){
 	atomCacheRef:       undefined,
 	smallIntegerExt:    decodeSmallInteger,
 	integerExt:         decodeInteger,
-	floatExt:           undefined,
+	floatExt:           decodeFloatExt,
 	atomExt:            undefined,
 	reference:          undefined,
 	portExt:            undefined,
